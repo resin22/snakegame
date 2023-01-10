@@ -1,0 +1,62 @@
+package ch.fhgr.jenb.snake.main.logik;
+
+
+public class SnakeCell {
+
+	private boolean fruitonfield = false;
+	private boolean isSnakeonfield = false;
+	private boolean isSnakeheadonfield = false;
+
+
+	public SnakeCell() {
+		
+
+	}
+
+	public boolean isFruitonfield() {
+		return fruitonfield;
+	}
+
+
+	public void setFruitonfield(boolean fruitonfield) {
+		this.fruitonfield = fruitonfield;
+	}
+
+
+	public boolean isSnakeonfield() {
+		return isSnakeonfield;
+	}
+
+
+	public void setSnakeonfield(boolean isSnakeonfield) {
+		this.isSnakeonfield = isSnakeonfield;
+	}
+
+
+	public boolean isNothingOnfield() {
+		return !fruitonfield && !isSnakeonfield;
+	}
+
+	
+	public String toString () {
+		return "snakecell: " + this.isSnakeonfield + " fruitcell: "+ this.fruitonfield;
+
+    }
+	
+	public String toStringLetters() {
+		if (isSnakeonfield) return "-";
+		if (fruitonfield) return "o";
+        return "x";
+    }
+
+	public boolean isSnakeheadonfield() {
+		return isSnakeheadonfield;
+	}
+
+	public void setSnakeheadonfield(boolean isSnakeheadonfield) {
+		this.isSnakeheadonfield = isSnakeheadonfield;
+	}
+
+	
+	
+}
