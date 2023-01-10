@@ -1,0 +1,84 @@
+package ch.fhgr.jenb.snake.main;
+
+import ch.fhgr.jenb.snake.main.logik.SnakeGrid;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class Main extends Application {
+	private SnakeGrid snakegrid = new SnakeGrid();
+	 private Label scoreLabel = new Label();
+	 private VBox vbox = new VBox();
+	 private int SCREENW = 630;
+	 private int SCREENH = 630;
+	 
+	@Override
+	public void start(Stage stage) throws Exception {
+
+		snakegrid.timeline();
+
+		stage.setTitle("Snake");
+		
+		scoreLabel.setText("Score: " + snakegrid.fruitCounter());
+		scoreLabel.getStyleClass().add("score");
+	
+
+		snakegrid.initGrid();
+		snakegrid.snakeinterface();
+		
+		
+		vbox.getChildren().add(scoreLabel);
+		vbox.getChildren().add(snakegrid.grid);
+
+		Scene scene = new Scene(vbox, SCREENW, SCREENH);
+		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		stage.setScene(scene);
+		stage.getScene().addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+
+			if (e.getCode() == KeyCode.UP) {
+
+				snakegrid.direction = KeyCode.UP;
+				snakegrid.moveSnake();
+				System.out.println("up");
+				scoreLabel.setText("Score: " + snakegrid.fruitCounter());
+				
+			}
+
+			else if (e.getCode() == KeyCode.LEFT) {
+
+				snakegrid.direction = KeyCode.LEFT;
+				snakegrid.moveSnake();
+				System.out.println("left");
+				scoreLabel.setText("Score: " + snakegrid.fruitCounter());
+			}
+
+			else if (e.getCode() == KeyCode.DOWN) {
+				snakegrid.direction = KeyCode.DOWN;
+				snakegrid.moveSnake();
+				System.out.println("down");
+				scoreLabel.setText("Score: " + snakegrid.fruitCounter());
+			}
+
+			else if (e.getCode() == KeyCode.RIGHT) {
+				snakegrid.direction = KeyCode.RIGHT;
+				snakegrid.moveSnake();
+				System.out.println("right");
+				scoreLabel.setText("Score: " + snakegrid.fruitCounter());
+			}
+
+		}
+
+		);
+		stage.show();
+
+	}
+
+	public static void main(String[] args) {
+		launch(args);
+
+	}
+}
