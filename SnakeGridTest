@@ -1,0 +1,372 @@
+package ch.fhgr.jenb.snake.view.logik;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+import ch.fhgr.jenb.snake.view.logik.config.Config;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.util.Duration;
+
+public class SnakeGrid {
+
+	public KeyCode direction = KeyCode.DOWN;
+	public GridPane grid = new GridPane();
+	public Timeline timeline = new Timeline();
+	public int fruitCount = 0;
+
+	private int speed = 1000;
+	private final int MAX_LENGTH = 10;
+	private int headX = 4;
+	private int headY = 4;
+	private boolean gameover = false;
+	private boolean gameWin = false;
+	private Snake snake = new Snake();
+	private SnakeCell[][] snakecell = new SnakeCell[MAX_LENGTH][MAX_LENGTH];
+
+
+
+	public SnakeGrid() {
+		for (int i = 0; i < snakecell.length; i++)
+			for (int j = 0; j < snakecell.length; j++)
+				snakecell[i][j] = new SnakeCell();
+	}
+
+	public int random() {
+		Random random = new Random();
+		int i = random.nextInt(MAX_LENGTH);
+		return i;
+
+	}
+
+	private void placeApple() {
+		boolean placed = false;
+
+		while (!placed) {
+			int x = random();
+			int y = random();
+
+			SnakeCell cell = snakecell[x][y];
+
+			if (!cell.isSnakeonfield()) {
+				cell.setFruitonfield(true);
+				placed = true;
+			}
+
+		}
+
+	}
+
+	private void placeSnake() {
+		snake.init(snakecell[headX][headY]);
+		
+	}
+	
+	public void printCurrentSnakePosition() {
+	    ArrayList<SnakeCell> schlange = snake.getSchlange();
+	    SnakeCell headCell = schlange.get(schlange.size()-1);
+	    headCell.setSnakeheadonfield(true);
+	    Region r2 = (Region) grid.getChildren().get(headX + headY  * MAX_LENGTH);
+	    r2.getStyleClass().add("STYLE_SNAKE_HEAD");
+	}
+	
+
+	public boolean snakeUp() {
+		headX = headX - 1;
+
+		if (headX == -1) {
+			gameover = true;
+			return false;
+		}
+
+		SnakeCell cell = snakecell[headX][headY];
+		if (cell.isSnakeonfield()) {
+			gameover = true;
+			return false;
+		}
+		Region region = new Region();
+		region.getStyleClass().add("STYLE_SNAKE_HEAD");
+		snakeEat();
+
+		return true;
+
+	}
+
+	public boolean snakeDown() {
+
+		headX = headX + 1;
+
+		if (headX == 10) {
+			gameover = true;
+			return false;
+		}
+
+		SnakeCell cell = snakecell[headX][headY];
+		if (cell.isSnakeonfield()) {
+			gameover = true;
+			return false;
+		}
+		Region region = new Region();
+		region.getStyleClass().add("STYLE_SNAKE_HEAD");
+		snakeEat();
+
+		return true;
+
+	}
+
+	public boolean snakeLeft() {
+
+		headY = headY - 1;
+
+		if (headY == -1) {
+			gameover = true;
+			return false;
+		}
+
+		SnakeCell cell = snakecell[headX][headY];
+		if (cell.isSnakeonfield()) {
+			gameover = true;
+			return false;
+		}
+		Region region = new Region();
+		region.getStyleClass().add("STYLE_SNAKE_HEAD");
+		snakeEat();
+
+		return true;
+
+	}
+
+	public boolean snakeRight() {
+		headY = headY + 1;
+		if (headY == 10) {
+			gameover = true;
+			return false;
+		}
+
+		SnakeCell cell = snakecell[headX][headY];
+		if (cell.isSnakeonfield()) {
+			gameover = true;
+			return false;
+		}
+		Region region = new Region();
+		region.getStyleClass().add("STYLE_SNAKE_HEAD");
+		snakeEat();
+
+		return true;
+	}
+
+	public void moveSnake() {
+		
+		switch (direction) {
+		case UP:
+
+			snakeUp();
+			snakeinterface();
+
+			break;
+		case DOWN:
+
+			snakeDown();
+			snakeinterface();
+
+			break;
+		case LEFT:
+
+			snakeLeft();
+			snakeinterface();
+
+			break;
+		case RIGHT:
+
+			snakeRight();
+			snakeinterface();
+
+			break;
+		default:
+			break;
+		}
+
+		if (isGameover()) {
+			timeline.stop();
+			ButtonType okButton = new ButtonType("Nochmals versuchen");
+			Alert alert = new Alert(AlertType.INFORMATION, "Game Over!", okButton);
+			alert.show();
+			alert.setOnCloseRequest(event -> {
+				ButtonType result = alert.getResult();
+				if (result == okButton) {
+					Config.config2("Game Over");
+					toReset();
+					timelineReset();
+				}
+			});
+		}
+
+		if (isGameWin() == true) {
+			timeline.stop();
+			ButtonType okButton = new ButtonType("Nochmals versuchen");
+			Alert alert = new Alert(AlertType.INFORMATION, "Game Win!", okButton);
+			alert.show();
+			alert.setOnCloseRequest(event -> {
+				ButtonType result = alert.getResult();
+				if (result == okButton) {
+					Config.config2("Game Win");
+					toReset();
+					timelineReset();
+				}
+			});
+
+		}
+
+	}
+
+	public void snakeinterface() {
+		for (int row = 0; row < MAX_LENGTH; row++) {
+			for (int col = 0; col < MAX_LENGTH; col++) {
+				Region r2 = new Region();
+				if (isSnakeOnfield(row, col)) {
+					r2.getStyleClass().add("STYLE_SNAKE");
+
+				}
+				else if (isFruitOnfield(row, col)) {
+					r2.getStyleClass().add("STYLE_APPLE");
+				} else if ((row + col) % 2 == 0) {
+					r2.getStyleClass().add("STYLE_RASTER");}
+				else {
+					r2.getStyleClass().add("STYLE_RASTER1");
+				}
+		
+				grid.add(r2, col, row);
+	
+			}
+		}
+		
+	}
+
+	// Abfrage wo die Schlange sich befindet und eine Funktion mit Parameter
+	// erstellt, welche wiederverwendet werden kann
+	public boolean isSnakeOnfield(int x, int y) {
+		SnakeCell cell = snakecell[x][y];
+		return cell.isSnakeonfield();
+
+	}
+
+	// Abfrage wo die Frucht sich befindet und eine Funktion mit Parameter erstellt,
+	// welche wiederverwendet werden kann
+	public boolean isFruitOnfield(int x, int y) {
+		SnakeCell cell = snakecell[x][y];
+		return cell.isFruitonfield();
+
+	}
+
+	public void initGrid() {
+		placeApple();
+		placeSnake();
+	}
+
+	public void toReset() {
+		gameover = false;
+		snake.getSchlange().clear();
+
+		headX = 4;
+		headY = 4;
+
+		for (int i = 0; i < snakecell.length; i++)
+			for (int j = 0; j < snakecell.length; j++)
+				snakecell[i][j] = new SnakeCell();
+
+		initGrid();
+		timeline();
+
+		Config.config2("Game reset");
+	}
+
+	public boolean isGameover() {
+		return gameover;
+	}
+
+	public boolean isGameWin() {
+		return gameWin;
+	}
+
+	public void snakeEat() {
+		SnakeCell cell = snakecell[headX][headY];
+		snake.move(cell);
+		if (cell.isFruitonfield()) {
+			cell.setFruitonfield(false);
+			Config.config2("Frucht gezählt");
+			fruitCount++;
+			if (fruitCount == 20) {
+				gameWin = true;
+				Config.config2("GameWin");
+			}
+			placeApple();
+			Config.config2("neuer Apfel gesetzt");
+			speed -= 50;
+			Config.config2("speedup");
+			timeline();
+
+		}
+
+	}
+
+	public int fruitCounter() {
+		return fruitCount;
+
+	}
+
+	public void timeline() {
+
+		timeline.stop();
+		timeline.getKeyFrames().clear();
+		timeline.setCycleCount(Timeline.INDEFINITE);
+		KeyFrame keyFrame = new KeyFrame(Duration.millis(speed), event -> moveSnake());
+		timeline.getKeyFrames().add(keyFrame);
+		timeline.play();
+		Config.config2("Timeline set up with SPEED: " + speed);
+
+	}
+
+	public void timelineReset() {
+
+		speed = 1000;
+		fruitCount = 0;
+		gameWin = false;
+
+		timeline();
+
+	}
+
+	// Raster für die Ausgabe in der Konsole wird hier gezeichnet - für die
+	// Überprüfung der Logik
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < snakecell.length; i++)
+			for (int j = 0; j < snakecell.length; j++)
+				sb.append(snakecell[i][j] + "\n");
+
+		return sb.toString();
+
+	}
+
+	// Raster für die Ausgabe in der Konsole wird hier gezeichnet - für die
+	// Überprüfung der Logik
+	public String toStringLetters() {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < snakecell.length; i++) {
+			sb.append("\n|");
+			for (int j = 0; j < snakecell.length; j++)
+				sb.append(snakecell[i][j].toStringLetters() + "|");
+
+		}
+
+		return sb.toString();
+
+	}
+
+}
